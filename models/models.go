@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Stock struct {
-	stockId   int64     `json:"stockId"`
+	ID        int64     `json:"stockId"`
 	Name      string    `json:"name"`
 	Price     float64   `json:"price"`
 	Company   string    `json:"company"`

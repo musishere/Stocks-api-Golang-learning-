@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 type response struct {
@@ -137,4 +138,70 @@ func DeleteStock(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(res)
 	slog.Info("Stock deleted successfully")
+}
+
+func insertStock(stock models.Stock) int64 {
+	db := CreateConnection()
+	defer db.Close()
+
+	query := "INSERT INTO stocks (name, price, company, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)"
+	_, err := db.Exec(query, stock.Name, stock.Price, stock.Company, stock.CreatedAt, stock.UpdatedAt)
+	if err != nil {
+		slog.Error("Error inserting stock into database", "error", err)
+		return 0
+	}
+
+	return stock.ID
+}
+
+func getAllStocks() []models.Stock {
+	db := CreateConnection()
+	defer db.Close()
+
+	query := "SELECT * FROM stocks"
+	_, err := db.Query(query)
+	if err != nil {
+		slog.Error("Error fetching stocks from database", "error", err)
+		return []models.Stock{}
+	}
+	return []models.Stock{}
+}
+
+func getStock(id int) models.Stock {
+	db := CreateConnection()
+	defer db.Close()
+
+	query := "SELECT * FROM stocks WHERE id = $1"
+	_, err := db.Query(query, id)
+	if err != nil {
+		slog.Error("Error fetching stock from database", "error", err)
+		return models.Stock{}
+	}
+	return models.Stock{}
+}
+
+func updateStock(stock models.Stock) int64 {
+	db := CreateConnection()
+	defer db.Close()
+
+	query := "UPDATE stocks SET name = $1, price = $2, company = $3, created_at = $4, updated_at = $5 WHERE id = $6"
+	_, err := db.Exec(query, stock.Name, stock.Price, stock.Company, stock.CreatedAt, stock.UpdatedAt, stock.ID)
+	if err != nil {
+		slog.Error("Error updating stock in database", "error", err)
+		return 0
+	}
+	return stock.ID
+}
+
+func deleteStock(stock models.Stock) int64 {
+	db := CreateConnection()
+	defer db.Close()
+
+	query := "DELETE FROM stocks WHERE id = $1"
+	_, err := db.Exec(query, stock.ID)
+	if err != nil {
+		slog.Error("Error deleting stock from database", "error", err)
+		return 0
+	}
+	return stock.ID
 }
